@@ -1,10 +1,10 @@
 package dev.badbird;
 
+import com.opencsv.CSVWriter;
 import dev.badbird.object.DataEntry;
 
-import java.text.DateFormat;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -38,10 +38,34 @@ public class PopulationParser {
                 count.put(year, counted);
             }
         }
+
+        List<Pair<Integer, Integer>> sorted = new ArrayList<>();
+
         count.forEach((k,v)-> {
-            System.out.println("Year " + k + ": " + v);
+            sorted.add(new Pair<>(k, v));
         });
+
+        sorted.sort(Comparator.comparing(Pair::getValue0));
+
+        for (Pair<Integer, Integer> integerIntegerPair : sorted) {
+            System.out.println("Year " + integerIntegerPair.getValue0() + ": " + integerIntegerPair.getValue1());
+        }
         System.out.println("Counted: " + total);
         System.out.println("No dates: " + noDates);
+
+        String[] header = {"year", "count", "", "Total: " + total, "No dates: " + noDates};
+        List<String[]> rows = new ArrayList<>();
+        rows.add(header);
+        for (Pair<Integer, Integer> integerIntegerPair : sorted) {
+            String[] row = {String.valueOf(integerIntegerPair.getValue0()), String.valueOf(integerIntegerPair.getValue1())};
+            rows.add(row);
+        }
+
+        try (CSVWriter writer = new CSVWriter(new FileWriter("output.csv"))) {
+            writer.writeAll(rows);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("Output written to output.csv");
     }
 }
